@@ -18,16 +18,21 @@ class OpenpyxlService(object):
     def get_file(self):
          return self.filename
     
-    def get_last_row(self,row):
-        return row
+    def get_last_row(self):
+        return self.controller_sheet_v2()
     
     def _open_workbook(self):
          self.wb = load_workbook(f'{self.filename}.xlsx')
     
     def save_workbook(self,ws,row,column):
-        if not self._cell_verification(ws,row,column):
+        if self._cell_verification(ws,row,column):
+            print(self._cell_verification(ws,row,column))
             self.wb.save(f'{self.filename}.xlsx')
             print('Salvo com sucesso')
+        else:
+            print(self._cell_verification(ws,row,column))
+            self.wb.close()
+            print('Sem mudanças na planilha')
         
 
     def _open_sheet(self):
@@ -209,24 +214,29 @@ class OpenpyxlService(object):
         return print(row)
         
     def _cell_verification(self,ws,row, column):
-         
-        if ws.cell(row=row, column=column+1).value == None:
-            print('check linha',row,'check coluna',column,ws.cell(row=row, column=column).value)
+        if ws.cell(row=row, column=column+2).value == None:
+            #print('check linha',row,'check coluna',column,ws.cell(row=row, column=column+1).value)
             return True
         else:
             return False
 
 
-    def controller_sheet_v2(self):
+    def controller_sheet_v2(self,last_row):
         ws = self._open_sheet()
         values = self.data
-    
-        for row in range(self.min_row,self.max_row+1):
+       
+        for row in range(self.min_row, last_row+1):
             for column in range(self.min_column, self.max_column):
+
                 if self._cell_verification(ws,row,column):
+                    if column == 4 or column ==7:
+                        continue
+                    if column == 3:
+                        ws.cell(row=row, column=column+1, value=values[column]).number_format ='_("R$ "* #.,00_);_("R$ "* (#.,00);_("R$ "* "-"??_);_(@_)' 
+
+                    else:
                         print('CELULA VAZIA #linha: ',row ,'---- column: ',column ,'----- valor: ', ws.cell(row=row, column=column+1, value=values[column]).value)   
-                        
-                        
+             
                 else:
                     print('CELULA COMPLETA #linha: ',row)
                     break
@@ -234,7 +244,7 @@ class OpenpyxlService(object):
 
         self.save_workbook(ws,row,column) 
         return row
-        
+    
                            
             
 
